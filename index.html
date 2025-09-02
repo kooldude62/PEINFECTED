@@ -1,273 +1,336 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Roblox Places — IDs & Names</title>
-<link rel="preconnect" href="https://tr.rbxcdn.com">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Play Grid — glassy viewer</title>
 <style>
   :root{
-    --bg:#030305;
-    --panel:#0b0c0d;
-    --muted:#7e858a;
-    --accent:#ffb86b;
-    --text:#e6eef3;
-    --card:#0f1112;
+    --bg:#060607;
+    --panel:rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.06);
+    --muted:#9aa3a8;
+    --accent:#90ee90; /* play green */
+    --accent-2:#79c1ff; /* glow blue */
+    --text:#eaf2f6;
+    --cardShadow: 0 10px 30px rgba(0,0,0,0.6);
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
-  body{
-    background:linear-gradient(180deg,#020203 0%, #070708 100%);
-    color:var(--text);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:18px;
-    padding:28px;
-  }
+  html,body{height:100%;margin:0;font-family:Inter, system-ui, "Segoe UI", Roboto, Arial, sans-serif;background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(41,46,55,0.25), transparent 8%),
+    linear-gradient(180deg,#030304 0%, #070708 100%); color:var(--text); -webkit-font-smoothing:antialiased}
+  body{display:flex;flex-direction:column;align-items:center;padding:28px;gap:18px}
 
-  header{
-    width:100%;
-    max-width:1200px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-  }
+  header{width:100%;max-width:1200px;display:flex;align-items:center;justify-content:space-between;gap:12px}
   h1{margin:0;font-size:20px;letter-spacing:0.2px}
   .sub{color:var(--muted);font-size:13px}
 
-  .controls{display:flex;gap:8px;align-items:center}
+  .controls{display:flex;gap:8px}
   .btn{
-    background:linear-gradient(180deg,#111214,#0e0f10);
-    border:1px solid rgba(255,255,255,0.03);
-    padding:8px 12px;border-radius:9px;color:var(--text);font-size:13px;cursor:pointer;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border:1px solid var(--glass-border);
+    padding:8px 12px;border-radius:10px;color:var(--text);font-size:13px;cursor:pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.6);backdrop-filter: blur(6px);
     transition:transform .12s ease, box-shadow .12s ease;
   }
   .btn:active{transform:translateY(1px)}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
+  .btn.ghost{background:transparent;color:var(--muted)}
 
   main{width:100%;max-width:1200px;display:flex;gap:20px}
-  .list{flex:1 1 680px}
-  .grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
-    gap:16px;
-  }
+  .grid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
 
+  /* Card */
   .card{
-    background:linear-gradient(180deg,var(--panel),#0b0c0d);
-    border-radius:12px;overflow:hidden;
-    box-shadow:0 12px 32px rgba(0,0,0,0.65);
-    transform:translateY(18px) scale(.995);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:14px; overflow:hidden; position:relative;
+    border:1px solid var(--glass-border);
+    box-shadow: var(--cardShadow);
+    transform: translateY(18px) scale(.995);
     opacity:0;
-    transition:transform .48s cubic-bezier(.2,.9,.2,1), opacity .48s ease, box-shadow .28s ease;
-    border:1px solid rgba(255,255,255,0.02);
+    transition: transform .5s cubic-bezier(.2,.9,.2,1), opacity .45s ease, box-shadow .25s ease;
+    will-change: transform, opacity;
+    backdrop-filter: blur(6px) saturate(120%);
+    min-height: 260px;
   }
-  .card.show{transform:translateY(0) scale(1);opacity:1}
-  .card:hover{box-shadow:0 18px 44px rgba(0,0,0,0.75); transform:translateY(-6px) scale(1.01)}
+  .card.show{transform:translateY(0) scale(1); opacity:1}
+  .card:hover{box-shadow: 0 20px 48px rgba(0,0,0,0.75); transform: translateY(-6px) scale(1.01)}
 
   .thumb{
-    width:100%;height:150px;object-fit:cover;background:#0a0a0b;display:block;
-    transition:transform .45s ease, filter .45s ease; transform-origin:center;
+    width:100%; height:160px; object-fit:cover; display:block; background:#0b0b0c;
+    transition: transform .45s ease, filter .45s ease;
   }
   .card:hover .thumb{transform:scale(1.03); filter:brightness(1.06) saturate(1.05)}
 
   .content{padding:12px}
-  .id{color:var(--accent);font-weight:700;font-size:14px;letter-spacing:.4px}
-  .name{color:var(--text);margin-top:8px;font-size:13px;min-height:38px}
-  .meta{color:var(--muted);font-size:12px;margin-top:8px}
+  .id{color:var(--accent-2); font-weight:700; font-size:12px}
+  .name{margin-top:8px; font-size:15px; font-weight:700; color:var(--text); min-height:40px}
+  .meta{margin-top:8px; color:var(--muted); font-size:12px}
 
-  .debug{
-    width:360px; max-width:360px; flex:0 0 360px;
-    background:#070809;border-radius:10px;padding:12px;border:1px solid #101112;color:var(--muted);
-    height:560px; overflow:auto;
+  /* Play button (glowing) */
+  .play-btn{
+    position:absolute; right:14px; top:14px; width:48px; height:48px; border-radius:12px;
+    background:linear-gradient(180deg,#34d454,#15a433);
+    display:flex; align-items:center; justify-content:center; text-decoration:none;
+    box-shadow: 0 6px 28px rgba(30,140,40,0.28), 0 0 28px rgba(30,140,40,0.12);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    border: 1px solid rgba(255,255,255,0.04);
   }
-  .debug h3{margin:0 0 8px 0;color:var(--muted);font-size:13px}
-  pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:#9aa0a6;background:transparent;border-radius:6px;padding:6px}
+  .play-btn:hover{transform:translateY(-3px); box-shadow: 0 10px 36px rgba(30,140,40,0.34), 0 0 40px rgba(30,140,40,0.18)}
+  .play-icon{width:0;height:0;border-left:14px solid white;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:4px}
 
-  .hint{color:var(--muted);font-size:13px;margin-top:10px}
+  /* modal (center box) */
+  .modal-backdrop{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(180deg, rgba(2,3,3,0.65), rgba(2,3,3,0.75));
+    backdrop-filter: blur(6px); z-index:999; opacity:0; pointer-events:none; transition:opacity .16s ease;
+  }
+  .modal-backdrop.open{opacity:1; pointer-events:auto}
+
+  .modal{
+    width: min(720px, 96%); background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border-radius:14px; border:1px solid rgba(255,255,255,0.06); box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    overflow:hidden; display:flex; gap:14px; transform: translateY(20px) scale(.995); opacity:0;
+    transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .28s ease;
+  }
+  .modal.open{ transform: translateY(0) scale(1); opacity:1 }
+  .modal-left{flex:0 0 45%; min-height:220px}
+  .modal-left img{width:100%; height:100%; object-fit:cover; display:block}
+  .modal-right{flex:1; padding:18px; display:flex; flex-direction:column}
+  .modal-right h2{margin:0;font-size:20px}
+  .modal-right p{margin:12px 0;color:var(--muted)}
+  .modal-right .meta{font-size:13px;color:var(--muted)}
+  .modal-actions{margin-top:auto;display:flex;gap:10px;align-items:center}
+  .big-play{
+    background:linear-gradient(180deg,#34d454,#15a433); padding:12px 18px;border-radius:12px;color:white;font-weight:700;text-decoration:none;
+    box-shadow:0 12px 30px rgba(30,140,40,0.28);
+    display:inline-flex;align-items:center;gap:10px; border:1px solid rgba(255,255,255,0.03)
+  }
+  .close-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 10px;border-radius:10px;cursor:pointer}
+
+  /* loading skeleton */
+  .skeleton{height:160px;background:linear-gradient(90deg,#0b0b0b,#101112,#0b0b0b); animation: shimmer 1.2s linear infinite; border-radius:8px}
+  @keyframes shimmer{0%{background-position:-200px 0} 100%{background-position:200px 0}}
+
+  /* responsive */
+  @media (max-width:820px){
+    .modal{flex-direction:column}
+    .modal-left{width:100%;flex:unset;height:180px}
+    .modal-right{padding:12px}
+  }
 </style>
 </head>
 <body>
-  <header>
+  <header style="width:100%;max-width:1200px;display:flex;align-items:center;justify-content:space-between">
     <div>
-      <h1>Roblox Places — IDs & Names</h1>
-      <div class="sub">Shows each ID, its name below, and an optional thumbnail. Fetches names automatically when needed.</div>
+      <h1>Play Grid</h1>
+      <div class="sub">Glass style, glow, tweens. Click a card to open details & play.</div>
     </div>
-
     <div class="controls">
       <button id="refreshBtn" class="btn">Refresh</button>
-      <button id="openGit" class="btn ghost">Open places.txt (raw)</button>
+      <button id="openGit" class="btn ghost">Open places.txt</button>
     </div>
   </header>
 
-  <main>
-    <section class="list">
-      <div id="grid" class="grid"></div>
-      <div class="hint">Accepted line formats: <code>id</code>, <code>id,name</code>, <code>id|name|thumb</code>, or <code>id name ...</code>.</div>
+  <main style="width:100%;max-width:1200px">
+    <section class="grid" id="grid" aria-live="polite">
+      <!-- cards injected here -->
     </section>
-
-    <aside class="debug">
-      <h3>Debug / Raw content</h3>
-      <pre id="raw">Loading...</pre>
-      <h3 style="margin-top:12px">Log</h3>
-      <pre id="log">No messages yet.</pre>
-    </aside>
   </main>
+
+  <!-- modal -->
+  <div id="backdrop" class="modal-backdrop" aria-hidden="true">
+    <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Place details">
+      <div class="modal-left" id="modalThumb">
+        <!-- image -->
+      </div>
+      <div class="modal-right">
+        <h2 id="modalName">Game name</h2>
+        <div class="meta" id="modalId">ID</div>
+        <p id="modalDesc">Description / extra info</p>
+        <div class="modal-actions">
+          <a id="modalPlay" class="big-play" href="#" target="_blank" rel="noopener noreferrer"><span style="width:12px;height:12px;border-left:9px solid white;border-top:6px solid transparent;border-bottom:6px solid transparent;display:inline-block"></span> Play</a>
+          <button id="modalClose" class="close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
 (async function(){
-  const txtUrl = "https://raw.githubusercontent.com/kooldude62/PEINFECTED/main/places.txt"; // your raw file
+  // set your raw txt URL here:
+  const txtUrl = "https://raw.githubusercontent.com/kooldude62/PEINFECTED/main/places.txt";
+
   const grid = document.getElementById('grid');
-  const rawEl = document.getElementById('raw');
-  const logEl = document.getElementById('log');
   const refreshBtn = document.getElementById('refreshBtn');
   const openGit = document.getElementById('openGit');
+  const backdrop = document.getElementById('backdrop');
+  const modal = document.getElementById('modal');
+  const modalThumb = document.getElementById('modalThumb');
+  const modalName = document.getElementById('modalName');
+  const modalId = document.getElementById('modalId');
+  const modalDesc = document.getElementById('modalDesc');
+  const modalPlay = document.getElementById('modalPlay');
+  const modalClose = document.getElementById('modalClose');
 
-  openGit.addEventListener('click', ()=> window.open(txtUrl, '_blank'));
+  openGit.addEventListener('click', ()=> window.open(txtUrl,'_blank'));
   refreshBtn.addEventListener('click', load);
 
-  function log(msg){
-    const prev = logEl.textContent.trim();
-    logEl.textContent = (prev === "No messages yet." ? "" : prev + "\n") + msg;
-  }
-
-  // Use a public CORS proxy to avoid browser CORS blocks with Roblox endpoints
-  // (AllOrigins is free; consider hosting your own proxy for production)
-  function proxyUrl(url){
-    return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-  }
-
-  async function fetchPlaceDetailsViaProxy(placeId){
-    const api = `https://games.roblox.com/v1/games/multiget-place-details?placeIds=${encodeURIComponent(placeId)}`;
-    try{
-      const r = await fetch(proxyUrl(api));
-      if(!r.ok) throw new Error('HTTP ' + r.status);
-      const json = await r.json();
-      if(json && Array.isArray(json.data) && json.data[0]) return json.data[0];
-      return null;
-    }catch(err){
-      throw err;
-    }
-  }
-
+  // tolerant parser for your bracket format (line may include trailing comma)
+  // Example accepted:
+  // Gubbyinfection = [Gubby infection, 113357488607334, https://tr.rbxcdn.com/..., https://www.roblox.com/games/113357488607334/...],
   function parseLine(line){
-    line = (line||'').trim();
     if(!line) return null;
+    line = line.trim().replace(/,+\s*$/,''); // remove trailing commas
+    const eq = line.indexOf('=');
+    const leftLabel = eq !== -1 ? line.slice(0, eq).trim() : null;
+    const right = eq !== -1 ? line.slice(eq+1).trim() : line;
 
-    // If pipe separated: id|name|thumb
-    if(line.includes('|')){
-      const p = line.split('|').map(s=>s.trim());
-      const id = (p[0]||'').match(/^(\d+)/);
-      return id ? { id: id[1], name: p[1]||null, thumb: p[2]||null } : null;
-    }
+    const m = right.match(/\[(.*)\]/);
+    if(!m) return null;
+    const inside = m[1].trim();
 
-    // If comma separated: id,name
-    if(line.includes(',')){
-      const parts = line.split(',');
-      const idMatch = (parts.shift()||'').trim().match(/^(\d+)/);
-      const name = parts.join(',').trim() || null;
-      if(idMatch) return { id: idMatch[1], name };
-    }
+    // naive split by comma, but we reconstruct so gamename can contain commas
+    const parts = inside.split(',').map(p => p.trim());
+    if(parts.length < 4) return null;
 
-    // single numeric id
-    const digitsOnly = line.match(/^(\d{4,})$/);
-    if(digitsOnly) return { id: digitsOnly[1], name: null };
-
-    // otherwise first numeric token is ID, rest is name
-    const tokens = line.split(/\s+/);
-    for(let i=0;i<tokens.length;i++){
-      const m = tokens[i].match(/^(\d{4,}),?$/);
-      if(m){
-        const id = m[1];
-        const name = tokens.slice(i+1).join(' ') || null;
-        return { id, name };
+    // We expect: [ gamename, gameid, thumbnail, link ] but user said format could also be duplicates etc.
+    // We'll treat:
+    //  - last element = link
+    //  - second last = thumbnail
+    //  - second element = id (if numeric)
+    //  - everything before second element (parts[0]) = gamename (but if parts[1] NOT numeric, join parts[0..n-3] as name)
+    const link = parts[parts.length - 1];
+    const thumb = parts[parts.length - 2];
+    // Now determine ID and gamename from the front slice
+    const front = parts.slice(0, parts.length - 2); // contains gamename and id somewhere
+    // If front length >= 2 and front[1] is numeric -> front[0] = gamename, front[1] = id
+    let gamename = null, gameid = null;
+    if(front.length >= 2 && /^\d+$/.test(front[1])){
+      gamename = front[0];
+      gameid = front[1];
+    } else if(front.length >= 2 && /^\d+$/.test(front[front.length-1])){
+      // last token in front is numeric -> that's the id; rest join = name
+      gameid = front[front.length-1];
+      gamename = front.slice(0, front.length-1).join(', ');
+    } else {
+      // fallback: try to find the first numeric token anywhere in front
+      let idx = -1;
+      for(let i=0;i<front.length;i++){ if(/^\d+$/.test(front[i])){ idx=i; break; } }
+      if(idx !== -1){
+        gameid = front[idx];
+        gamename = front.slice(0, idx).concat(front.slice(idx+1)).join(', ') || leftLabel || front.join(', ');
+      } else {
+        // no numeric id found: treat front[0] as gamename and leave id empty
+        gamename = front.join(', ') || leftLabel || '(no name)';
+        gameid = '';
       }
     }
 
-    // fallback: find any 4+ digit number in the line
-    const m = line.match(/(\d{4,})/);
-    if(m) return { id: m[1], name: line.replace(m[1],'').trim() || null };
-
-    return null;
+    // final cleanup
+    if(!gamename || gamename.length === 0) gamename = leftLabel || '(no name)';
+    return { leftLabel, gamename, gameid, thumb, link };
   }
 
-  // escape html
-  function esc(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  // create card element for item
+  function createCard(item, idx){
+    const card = document.createElement('div');
+    card.className = 'card';
+    const thumbHtml = item.thumb
+      ? `<img class="thumb" loading="lazy" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.gamename)}" onerror="this.style.opacity=.12;this.style.filter='grayscale(100%)';">`
+      : `<div style="height:160px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:linear-gradient(180deg,#070707,#0a0a0a)">No thumbnail</div>`;
+    const playBtn = item.link ? `<a class="play-btn" href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${escapeHtml(item.gamename)}"><span class="play-icon"></span></a>` : '';
+    const idText = item.gameid && item.gameid.length ? escapeHtml(item.gameid) : '(no id)';
+    card.innerHTML = `${thumbHtml}${playBtn}<div class="content"><div class="id">${idText}</div><div class="name">${escapeHtml(item.gamename)}</div><div class="meta">${item.leftLabel ? escapeHtml(item.leftLabel) : ''}</div></div>`;
+    // show animation stagger
+    setTimeout(()=>card.classList.add('show'), 80 * idx);
 
+    // click opens modal with details
+    card.addEventListener('click', (ev)=>{
+      // if clicking play button link, let default happen (don't open modal)
+      if(ev.target.closest('.play-btn')) return;
+      openModal(item);
+    });
+    return card;
+  }
+
+  // modal open/close
+  function openModal(item){
+    modalThumb.innerHTML = item.thumb ? `<img src="${escapeHtml(item.thumb)}" alt="">` : `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted)">No image</div>`;
+    modalName.textContent = item.gamename || '(no name)';
+    modalId.textContent = item.gameid ? `ID: ${item.gameid}` : 'ID: (none)';
+    modalDesc.textContent = item.leftLabel ? `Label: ${item.leftLabel}` : '';
+    modalPlay.href = item.link || '#';
+    modalPlay.setAttribute('aria-disabled', item.link ? 'false' : 'true');
+    // show backdrop + modal
+    backdrop.classList.add('open');
+    setTimeout(()=>modal.classList.add('open'), 20);
+    // trap scroll
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    modal.classList.remove('open');
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  backdrop.addEventListener('click', (ev)=>{
+    if(ev.target === backdrop) closeModal();
+  });
+  modalClose.addEventListener('click', closeModal);
+  window.addEventListener('keydown', (ev)=>{ if(ev.key === 'Escape') closeModal(); });
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  // fetch file, parse lines, create cards
   async function load(){
     grid.innerHTML = '';
-    rawEl.textContent = 'Loading...';
-    logEl.textContent = 'No messages yet.';
+    // show 6 skeletons while loading
+    for(let i=0;i<6;i++){
+      const sk = document.createElement('div');
+      sk.className = 'card';
+      sk.innerHTML = `<div class="skeleton" style="height:160px;border-radius:6px"></div><div style="padding:12px"><div style="height:12px;width:60%;background:#0f1011;border-radius:6px;margin-bottom:8px"></div><div style="height:10px;width:40%;background:#0f1011;border-radius:6px"></div></div>`;
+      grid.appendChild(sk);
+      setTimeout(()=>sk.classList.add('show'), 40 * i);
+    }
 
-    try{
+    try {
       const res = await fetch(txtUrl);
       if(!res.ok) throw new Error('Failed to fetch places.txt: ' + res.status);
       const txt = await res.text();
-      rawEl.textContent = txt || '(empty)';
-      const lines = txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-      if(lines.length === 0){ log('places.txt is empty'); return; }
-
+      // split lines tolerant to commas between items and trailing commas
+      const rawLines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      // clear skeletons
+      grid.innerHTML = '';
       let idx = 0;
-      for(const line of lines){
-        idx++;
-        const parsed = parseLine(line);
-        if(!parsed){
-          log('Line '+idx+' could not be parsed: ' + line);
-          continue;
-        }
-
-        const id = parsed.id;
-        let name = parsed.name;
-        let thumbUrl = parsed.thumb || null;
-        let universeId = null;
-
-        // If we don't have a name or thumbnail, query Roblox (via proxy)
-        if(!name || !thumbUrl){
-          try{
-            const details = await fetchPlaceDetailsViaProxy(id);
-            if(details){
-              name = name || details.name || name;
-              universeId = details.universeId || universeId;
-            } else {
-              log('Roblox returned no details for id ' + id);
-            }
-          }catch(err){
-            log('Failed to fetch name for id ' + id + ' : ' + (err.message || err));
-          }
-        }
-
-        // If we now have a universeId, build a thumbnail url (tr.rbxcdn is image host; images can be loaded without proxy)
-        if(!thumbUrl && universeId){
-          thumbUrl = `https://tr.rbxcdn.com/${universeId}/420/420/Image/Png`;
-        }
-
-        // Build the card
-        const card = document.createElement('div');
-        card.className = 'card';
-        const imgHtml = thumbUrl
-          ? `<img class="thumb" src="${esc(thumbUrl)}" alt="thumb for ${esc(id)}" onerror="this.style.opacity=.05;this.style.filter='grayscale(100%)';">`
-          : `<div style="height:150px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:linear-gradient(180deg,#070707,#0a0a0a)">No thumbnail</div>`;
-
-        const displayName = name || '(name not found)';
-        card.innerHTML = `${imgHtml}<div class="content"><div class="id">${esc(id)}</div><div class="name">${esc(displayName)}</div><div class="meta">${universeId ? 'universe: '+esc(universeId) : ''}</div></div>`;
-
+      for(const ln of rawLines){
+        // allow trailing comma separated lines, remove trailing commas
+        const cleaned = ln.replace(/\s*,$/, '');
+        const parsed = parseLine(cleaned);
+        if(!parsed) continue;
+        const card = createCard(parsed, idx);
         grid.appendChild(card);
-
-        // staggered show
-        setTimeout(()=>card.classList.add('show'), 80 * (idx-1));
+        idx++;
       }
-    }catch(err){
-      rawEl.textContent = '(failed)';
-      log('Error loading file: ' + (err.message || err));
+      if(grid.children.length === 0){
+        const note = document.createElement('div'); note.className='note'; note.textContent='No valid lines found in places.txt';
+        grid.appendChild(note);
+      }
+    } catch(err){
       console.error(err);
+      grid.innerHTML = '';
+      const error = document.createElement('div');
+      error.className = 'note';
+      error.style.color = '#ff8b8b';
+      error.textContent = 'Error loading places.txt. Open console for details.';
+      grid.appendChild(error);
     }
   }
 
   // initial load
   await load();
 
+  // expose refresh
+  window.reloadGrid = load;
 })();
 </script>
 </body>
