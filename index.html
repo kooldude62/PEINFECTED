@@ -1,75 +1,274 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Places List</title>
-  <style>
-    body {
-      background-color: #121212;
-      color: #f0f0f0;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    .place {
-      margin: 20px auto;
-      padding: 15px;
-      border: 1px solid #333;
-      border-radius: 10px;
-      max-width: 400px;
-      background: #1e1e1e;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-    }
-    .place-id {
-      font-size: 18px;
-      font-weight: bold;
-      color: #ff9800;
-    }
-    .place-name {
-      font-size: 16px;
-      color: #bbb;
-      margin-top: 5px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Roblox Places — IDs & Names</title>
+<link rel="preconnect" href="https://tr.rbxcdn.com">
+<style>
+  :root{
+    --bg:#030305;
+    --panel:#0b0c0d;
+    --muted:#7e858a;
+    --accent:#ffb86b;
+    --text:#e6eef3;
+    --card:#0f1112;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  body{
+    background:linear-gradient(180deg,#020203 0%, #070708 100%);
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    padding:28px;
+  }
+
+  header{
+    width:100%;
+    max-width:1200px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  h1{margin:0;font-size:20px;letter-spacing:0.2px}
+  .sub{color:var(--muted);font-size:13px}
+
+  .controls{display:flex;gap:8px;align-items:center}
+  .btn{
+    background:linear-gradient(180deg,#111214,#0e0f10);
+    border:1px solid rgba(255,255,255,0.03);
+    padding:8px 12px;border-radius:9px;color:var(--text);font-size:13px;cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
+
+  main{width:100%;max-width:1200px;display:flex;gap:20px}
+  .list{flex:1 1 680px}
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+    gap:16px;
+  }
+
+  .card{
+    background:linear-gradient(180deg,var(--panel),#0b0c0d);
+    border-radius:12px;overflow:hidden;
+    box-shadow:0 12px 32px rgba(0,0,0,0.65);
+    transform:translateY(18px) scale(.995);
+    opacity:0;
+    transition:transform .48s cubic-bezier(.2,.9,.2,1), opacity .48s ease, box-shadow .28s ease;
+    border:1px solid rgba(255,255,255,0.02);
+  }
+  .card.show{transform:translateY(0) scale(1);opacity:1}
+  .card:hover{box-shadow:0 18px 44px rgba(0,0,0,0.75); transform:translateY(-6px) scale(1.01)}
+
+  .thumb{
+    width:100%;height:150px;object-fit:cover;background:#0a0a0b;display:block;
+    transition:transform .45s ease, filter .45s ease; transform-origin:center;
+  }
+  .card:hover .thumb{transform:scale(1.03); filter:brightness(1.06) saturate(1.05)}
+
+  .content{padding:12px}
+  .id{color:var(--accent);font-weight:700;font-size:14px;letter-spacing:.4px}
+  .name{color:var(--text);margin-top:8px;font-size:13px;min-height:38px}
+  .meta{color:var(--muted);font-size:12px;margin-top:8px}
+
+  .debug{
+    width:360px; max-width:360px; flex:0 0 360px;
+    background:#070809;border-radius:10px;padding:12px;border:1px solid #101112;color:var(--muted);
+    height:560px; overflow:auto;
+  }
+  .debug h3{margin:0 0 8px 0;color:var(--muted);font-size:13px}
+  pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:#9aa0a6;background:transparent;border-radius:6px;padding:6px}
+
+  .hint{color:var(--muted);font-size:13px;margin-top:10px}
+</style>
 </head>
 <body>
-  <h1>Game Places</h1>
-  <div id="places"></div>
+  <header>
+    <div>
+      <h1>Roblox Places — IDs & Names</h1>
+      <div class="sub">Shows each ID, its name below, and an optional thumbnail. Fetches names automatically when needed.</div>
+    </div>
 
-  <script>
-    async function loadPlaces() {
-      try {
-        const response = await fetch("https://raw.githubusercontent.com/kooldude62/PEINFECTED/refs/heads/main/places.txt");
-        const text = await response.text();
-        const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+    <div class="controls">
+      <button id="refreshBtn" class="btn">Refresh</button>
+      <button id="openGit" class="btn ghost">Open places.txt (raw)</button>
+    </div>
+  </header>
 
-        const container = document.getElementById("places");
+  <main>
+    <section class="list">
+      <div id="grid" class="grid"></div>
+      <div class="hint">Accepted line formats: <code>id</code>, <code>id,name</code>, <code>id|name|thumb</code>, or <code>id name ...</code>.</div>
+    </section>
 
-        for (const line of lines) {
-          const [id, name] = line.split(",").map(part => part.trim());
-          if (id && name) {
-            const placeDiv = document.createElement("div");
-            placeDiv.className = "place";
+    <aside class="debug">
+      <h3>Debug / Raw content</h3>
+      <pre id="raw">Loading...</pre>
+      <h3 style="margin-top:12px">Log</h3>
+      <pre id="log">No messages yet.</pre>
+    </aside>
+  </main>
 
-            const idEl = document.createElement("div");
-            idEl.className = "place-id";
-            idEl.textContent = id;
+<script>
+(async function(){
+  const txtUrl = "https://raw.githubusercontent.com/kooldude62/PEINFECTED/main/places.txt"; // your raw file
+  const grid = document.getElementById('grid');
+  const rawEl = document.getElementById('raw');
+  const logEl = document.getElementById('log');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const openGit = document.getElementById('openGit');
 
-            const nameEl = document.createElement("div");
-            nameEl.className = "place-name";
-            nameEl.textContent = name;
+  openGit.addEventListener('click', ()=> window.open(txtUrl, '_blank'));
+  refreshBtn.addEventListener('click', load);
 
-            placeDiv.appendChild(idEl);
-            placeDiv.appendChild(nameEl);
-            container.appendChild(placeDiv);
-          }
-        }
-      } catch (err) {
-        console.error("Error loading places.txt:", err);
+  function log(msg){
+    const prev = logEl.textContent.trim();
+    logEl.textContent = (prev === "No messages yet." ? "" : prev + "\n") + msg;
+  }
+
+  // Use a public CORS proxy to avoid browser CORS blocks with Roblox endpoints
+  // (AllOrigins is free; consider hosting your own proxy for production)
+  function proxyUrl(url){
+    return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+  }
+
+  async function fetchPlaceDetailsViaProxy(placeId){
+    const api = `https://games.roblox.com/v1/games/multiget-place-details?placeIds=${encodeURIComponent(placeId)}`;
+    try{
+      const r = await fetch(proxyUrl(api));
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      const json = await r.json();
+      if(json && Array.isArray(json.data) && json.data[0]) return json.data[0];
+      return null;
+    }catch(err){
+      throw err;
+    }
+  }
+
+  function parseLine(line){
+    line = (line||'').trim();
+    if(!line) return null;
+
+    // If pipe separated: id|name|thumb
+    if(line.includes('|')){
+      const p = line.split('|').map(s=>s.trim());
+      const id = (p[0]||'').match(/^(\d+)/);
+      return id ? { id: id[1], name: p[1]||null, thumb: p[2]||null } : null;
+    }
+
+    // If comma separated: id,name
+    if(line.includes(',')){
+      const parts = line.split(',');
+      const idMatch = (parts.shift()||'').trim().match(/^(\d+)/);
+      const name = parts.join(',').trim() || null;
+      if(idMatch) return { id: idMatch[1], name };
+    }
+
+    // single numeric id
+    const digitsOnly = line.match(/^(\d{4,})$/);
+    if(digitsOnly) return { id: digitsOnly[1], name: null };
+
+    // otherwise first numeric token is ID, rest is name
+    const tokens = line.split(/\s+/);
+    for(let i=0;i<tokens.length;i++){
+      const m = tokens[i].match(/^(\d{4,}),?$/);
+      if(m){
+        const id = m[1];
+        const name = tokens.slice(i+1).join(' ') || null;
+        return { id, name };
       }
     }
 
-    loadPlaces();
-  </script>
+    // fallback: find any 4+ digit number in the line
+    const m = line.match(/(\d{4,})/);
+    if(m) return { id: m[1], name: line.replace(m[1],'').trim() || null };
+
+    return null;
+  }
+
+  // escape html
+  function esc(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  async function load(){
+    grid.innerHTML = '';
+    rawEl.textContent = 'Loading...';
+    logEl.textContent = 'No messages yet.';
+
+    try{
+      const res = await fetch(txtUrl);
+      if(!res.ok) throw new Error('Failed to fetch places.txt: ' + res.status);
+      const txt = await res.text();
+      rawEl.textContent = txt || '(empty)';
+      const lines = txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      if(lines.length === 0){ log('places.txt is empty'); return; }
+
+      let idx = 0;
+      for(const line of lines){
+        idx++;
+        const parsed = parseLine(line);
+        if(!parsed){
+          log('Line '+idx+' could not be parsed: ' + line);
+          continue;
+        }
+
+        const id = parsed.id;
+        let name = parsed.name;
+        let thumbUrl = parsed.thumb || null;
+        let universeId = null;
+
+        // If we don't have a name or thumbnail, query Roblox (via proxy)
+        if(!name || !thumbUrl){
+          try{
+            const details = await fetchPlaceDetailsViaProxy(id);
+            if(details){
+              name = name || details.name || name;
+              universeId = details.universeId || universeId;
+            } else {
+              log('Roblox returned no details for id ' + id);
+            }
+          }catch(err){
+            log('Failed to fetch name for id ' + id + ' : ' + (err.message || err));
+          }
+        }
+
+        // If we now have a universeId, build a thumbnail url (tr.rbxcdn is image host; images can be loaded without proxy)
+        if(!thumbUrl && universeId){
+          thumbUrl = `https://tr.rbxcdn.com/${universeId}/420/420/Image/Png`;
+        }
+
+        // Build the card
+        const card = document.createElement('div');
+        card.className = 'card';
+        const imgHtml = thumbUrl
+          ? `<img class="thumb" src="${esc(thumbUrl)}" alt="thumb for ${esc(id)}" onerror="this.style.opacity=.05;this.style.filter='grayscale(100%)';">`
+          : `<div style="height:150px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:linear-gradient(180deg,#070707,#0a0a0a)">No thumbnail</div>`;
+
+        const displayName = name || '(name not found)';
+        card.innerHTML = `${imgHtml}<div class="content"><div class="id">${esc(id)}</div><div class="name">${esc(displayName)}</div><div class="meta">${universeId ? 'universe: '+esc(universeId) : ''}</div></div>`;
+
+        grid.appendChild(card);
+
+        // staggered show
+        setTimeout(()=>card.classList.add('show'), 80 * (idx-1));
+      }
+    }catch(err){
+      rawEl.textContent = '(failed)';
+      log('Error loading file: ' + (err.message || err));
+      console.error(err);
+    }
+  }
+
+  // initial load
+  await load();
+
+})();
+</script>
 </body>
 </html>
