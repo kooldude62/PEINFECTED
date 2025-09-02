@@ -15,7 +15,11 @@
     align-items: center;
     padding: 20px;
   }
-  h1 { color: #fff; text-align: center; margin-bottom: 20px; }
+  h1 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+  }
   .place-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -28,16 +32,34 @@
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s, opacity 0.5s;
+    cursor: pointer;
+    opacity: 0;
+  }
+  .place-card.show {
+    opacity: 1;
   }
   .place-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.7);
   }
-  .place-card img { width: 100%; display: block; }
-  .place-card .info { padding: 10px; }
-  .place-card .info h2 { margin: 0; font-size: 1.2em; }
-  .place-card .info p { margin: 5px 0 0 0; font-size: 0.9em; color: #aaa; }
+  .place-card img {
+    width: 100%;
+    display: block;
+  }
+  .place-card .info {
+    padding: 10px;
+  }
+  .place-card .info h2 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #f0f0f0;
+  }
+  .place-card .info p {
+    margin: 5px 0 0 0;
+    font-size: 0.9em;
+    color: #aaa;
+  }
 </style>
 </head>
 <body>
@@ -48,45 +70,53 @@
 <script>
 const placeContainer = document.getElementById("placeContainer");
 
-// URL to your TXT file on GitHub (raw link)
-const txtUrl = "https://raw.githubusercontent.com/YOURUSERNAME/YOURREPO/main/places.txt";
+// Correct raw GitHub URL for your TXT file
+const txtUrl = "https://raw.githubusercontent.com/kooldude62/PEINFECTED/main/places.txt";
 
 async function loadPlaces() {
-  const res = await fetch(txtUrl);
-  const text = await res.text();
-  const placeIds = text.split(/\r?\n/).filter(Boolean);
+  try {
+    const res = await fetch(txtUrl);
+    const text = await res.text();
+    const placeIds = text.split(/\r?\n/).filter(Boolean);
 
-  for (const id of placeIds) {
-    try {
-      const apiRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${id}`);
-      const data = await apiRes.json();
-      const place = data.data[0];
-      if (place) {
-        const card = document.createElement("div");
-        card.className = "place-card";
+    for (const id of placeIds) {
+      try {
+        const apiRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${id}`);
+        const data = await apiRes.json();
+        const place = data.data[0];
 
-        const img = document.createElement("img");
-        img.src = `https://tr.rbxcdn.com/${place.universeId}/420/420/Image/Png`;
-        img.alt = place.name;
+        if (place) {
+          const card = document.createElement("div");
+          card.className = "place-card";
 
-        const info = document.createElement("div");
-        info.className = "info";
+          const img = document.createElement("img");
+          img.src = `https://tr.rbxcdn.com/${place.universeId}/420/420/Image/Png`;
+          img.alt = place.name;
 
-        const name = document.createElement("h2");
-        name.textContent = place.name;
+          const info = document.createElement("div");
+          info.className = "info";
 
-        const desc = document.createElement("p");
-        desc.textContent = place.description || "No description";
+          const name = document.createElement("h2");
+          name.textContent = place.name;
 
-        info.appendChild(name);
-        info.appendChild(desc);
-        card.appendChild(img);
-        card.appendChild(info);
-        placeContainer.appendChild(card);
+          const desc = document.createElement("p");
+          desc.textContent = place.description || "No description";
+
+          info.appendChild(name);
+          info.appendChild(desc);
+          card.appendChild(img);
+          card.appendChild(info);
+          placeContainer.appendChild(card);
+
+          // Smooth fade-in
+          setTimeout(() => card.classList.add("show"), 50);
+        }
+      } catch (e) {
+        console.warn("Failed to load place ID:", id);
       }
-    } catch (e) {
-      console.warn("Failed to load place ID:", id);
     }
+  } catch (e) {
+    console.error("Failed to fetch TXT file:", e);
   }
 }
 
