@@ -2,104 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Place Viewer</title>
+  <title>Places List</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0a0a0a;
+      background-color: #121212;
       color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 30px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
     }
-
-    .container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 1200px;
-    }
-
-    .card {
-      background: #161616;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-      transform: translateY(30px);
-      opacity: 0;
-      transition: all 0.6s ease;
-    }
-
-    .card.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .thumbnail {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-    }
-
-    .info {
+    .place {
+      margin: 20px auto;
       padding: 15px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      max-width: 400px;
+      background: #1e1e1e;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     }
-
-    .info h2 {
-      margin: 0 0 10px;
+    .place-id {
       font-size: 18px;
-      color: #ffffff;
+      font-weight: bold;
+      color: #ff9800;
     }
-
-    .info p {
-      margin: 0;
-      font-size: 14px;
-      color: #cccccc;
+    .place-name {
+      font-size: 16px;
+      color: #bbb;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="container"></div>
+  <h1>Game Places</h1>
+  <div id="places"></div>
 
   <script>
     async function loadPlaces() {
-      const url = "https://raw.githubusercontent.com/kooldude62/PEINFECTED/refs/heads/main/places.txt";
-      const response = await fetch(url);
-      const text = await response.text();
+      try {
+        const response = await fetch("https://raw.githubusercontent.com/kooldude62/PEINFECTED/refs/heads/main/places.txt");
+        const text = await response.text();
+        const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
 
-      const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+        const container = document.getElementById("places");
 
-      const container = document.getElementById("container");
-      container.innerHTML = "";
+        for (const line of lines) {
+          const [id, name] = line.split(",").map(part => part.trim());
+          if (id && name) {
+            const placeDiv = document.createElement("div");
+            placeDiv.className = "place";
 
-      lines.forEach((line, index) => {
-        const parts = line.split("|");
-        if (parts.length < 3) return;
+            const idEl = document.createElement("div");
+            idEl.className = "place-id";
+            idEl.textContent = id;
 
-        const [name, description, thumbnail] = parts;
+            const nameEl = document.createElement("div");
+            nameEl.className = "place-name";
+            nameEl.textContent = name;
 
-        const card = document.createElement("div");
-        card.className = "card";
-
-        card.innerHTML = `
-          <img src="${thumbnail}" alt="${name}" class="thumbnail">
-          <div class="info">
-            <h2>${name}</h2>
-            <p>${description}</p>
-          </div>
-        `;
-
-        container.appendChild(card);
-
-        // Tween effect staggered
-        setTimeout(() => {
-          card.classList.add("show");
-        }, 200 * index);
-      });
+            placeDiv.appendChild(idEl);
+            placeDiv.appendChild(nameEl);
+            container.appendChild(placeDiv);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading places.txt:", err);
+      }
     }
 
     loadPlaces();
